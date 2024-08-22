@@ -26,11 +26,26 @@ func init() {
 	}
 }
 
+func banner() {
+	fmt.Println()
+	color.Yellow("   █████████  ████                                 █████████   ████  ████ ")
+	color.Yellow("  ███░░░░░███░░███                                ███░░░░░███ ░░███ ░░███ ")
+	color.Yellow(" ███     ░░░  ░███   ██████  ████████    ██████  ░███    ░███  ░███  ░███ ")
+	color.Yellow("░███          ░███  ███░░███░░███░░███  ███░░███ ░███████████  ░███  ░███ ")
+	color.Yellow("░███          ░███ ░███ ░███ ░███ ░███ ░███████  ░███░░░░░███  ░███  ░███ ")
+	color.Yellow("░░███     ███ ░███ ░███ ░███ ░███ ░███ ░███░░░   ░███    ░███  ░███  ░███ ")
+	color.Yellow(" ░░█████████  █████░░██████  ████ █████░░██████  █████   █████ █████ █████")
+	color.Yellow("  ░░░░░░░░░  ░░░░░  ░░░░░░  ░░░░ ░░░░░  ░░░░░░  ░░░░░   ░░░░░ ░░░░░ ░░░░░ ")
+	fmt.Println()
+}
+
 func main() {
 	token := os.Getenv("GITHUB_TOKEN")
 	if token == "" {
 		log.Fatalf("GitHub token not found in .env file")
 	}
+
+	banner()
 
 	// Set up OAuth2 authentication
 	ctx := context.Background()
@@ -45,7 +60,7 @@ func main() {
 	for {
 		// Get the GitHub username from the user
 		reader := bufio.NewReader(os.Stdin)
-		color.Cyan("Enter GitHub username (or type 'exit' to quit): ")
+		color.Yellow("Enter GitHub username (or type 'exit' to quit): ")
 		username, _ := reader.ReadString('\n')
 		username = strings.TrimSpace(username) // remove newline character and any surrounding spaces
 
@@ -82,7 +97,7 @@ func main() {
 
 		printRepoList(allRepos)
 
-		color.Cyan("Enter your choice (number): ")
+		color.Yellow("Enter your choice (number): ")
 		choice, _ := reader.ReadString('\n')
 		choice = strings.TrimSpace(choice)
 		choiceNum, _ := strconv.Atoi(choice)
