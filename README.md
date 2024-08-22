@@ -55,8 +55,8 @@ It provides an interactive and colorful terminal interface to choose and clone r
 
 2. **Run the Script**:
   ```bash
-go run cloneAllRepo.go
-```
+   go run cloneAllRepo.go
+  ```
 
 Follow the Prompts:
 
