@@ -42,58 +42,71 @@ func main() {
 	// Create a GitHub client
 	client := github.NewClient(tc)
 
-	// Get the GitHub username from the user
-	reader := bufio.NewReader(os.Stdin)
-	color.Cyan("Enter GitHub username: ")
-	username, _ := reader.ReadString('\n')
-	username = strings.TrimSpace(username) // remove newline character and any surrounding spaces
-
-	// Initialize an empty slice to store all repositories
-	var allRepos []*github.Repository
-
-	// Fetch all repositories for the user with pagination
-	opts := &github.RepositoryListOptions{ListOptions: github.ListOptions{PerPage: 50}} // Adjust PerPage if needed
 	for {
-		repos, resp, err := client.Repositories.List(ctx, username, opts)
-		if err != nil {
-			log.Fatalf("Error fetching repositories: %v", err)
-		}
+		// Get the GitHub username from the user
+		reader := bufio.NewReader(os.Stdin)
+		color.Cyan("Enter GitHub username (or type 'exit' to quit): ")
+		username, _ := reader.ReadString('\n')
+		username = strings.TrimSpace(username) // remove newline character and any surrounding spaces
 
-		// Append the current page of repos to allRepos
-		allRepos = append(allRepos, repos...)
-
-		// Check if there are more pages to fetch
-		if resp.NextPage == 0 {
+		if strings.ToLower(username) == "exit" {
+			color.Yellow("Exiting the program.")
 			break
 		}
-		opts.Page = resp.NextPage
-	}
 
-	// List repositories and ask for user selection
-	color.Yellow("Select repository to clone:")
-	color.Green("1. All")
+		// Initialize an empty slice to store all repositories
+		var allRepos []*github.Repository
 
-	printRepoList(allRepos)
+		// Fetch all repositories for the user with pagination
+		opts := &github.RepositoryListOptions{ListOptions: github.ListOptions{PerPage: 50}} // Adjust PerPage if needed
+		for {
+			repos, resp, err := client.Repositories.List(ctx, username, opts)
+			if err != nil {
+				log.Fatalf("Error fetching repositories: %v", err)
+			}
 
-	color.Cyan("Enter your choice (number): ")
-	choice, _ := reader.ReadString('\n')
-	choice = strings.TrimSpace(choice)
-	choiceNum, _ := strconv.Atoi(choice)
+			// Append the current page of repos to allRepos
+			allRepos = append(allRepos, repos...)
 
-	// Create a directory with the GitHub username
-	os.Mkdir(fmt.Sprintf("%s's Repo", username), 0755)
-
-	// Clone the repositories based on user choice
-	if choiceNum == 1 {
-		// Clone all repositories
-		for _, repo := range allRepos {
-			cloneRepo(username, *repo.CloneURL)
+			// Check if there are more pages to fetch
+			if resp.NextPage == 0 {
+				break
+			}
+			opts.Page = resp.NextPage
 		}
-	} else if choiceNum >= 2 && choiceNum < len(allRepos)+2 {
-		// Clone the selected repository
-		cloneRepo(username, *allRepos[choiceNum-2].CloneURL)
-	} else {
-		color.Red("Invalid choice")
+
+		// List repositories and ask for user selection
+		color.Yellow("Select repository to clone:")
+		color.Red("0. Exit") // Option to exit
+		color.Green("1. All")
+
+		printRepoList(allRepos)
+
+		color.Cyan("Enter your choice (number): ")
+		choice, _ := reader.ReadString('\n')
+		choice = strings.TrimSpace(choice)
+		choiceNum, _ := strconv.Atoi(choice)
+
+		if choiceNum == 0 {
+			color.Yellow("Exiting to username input.")
+			continue
+		}
+
+		// Create a directory with the GitHub username
+		os.Mkdir(fmt.Sprintf("%s's Repo", username), 0755)
+
+		// Clone the repositories based on user choice
+		if choiceNum == 1 {
+			// Clone all repositories
+			for _, repo := range allRepos {
+				cloneRepo(username, *repo.CloneURL)
+			}
+		} else if choiceNum >= 2 && choiceNum < len(allRepos)+2 {
+			// Clone the selected repository
+			cloneRepo(username, *allRepos[choiceNum-2].CloneURL)
+		} else {
+			color.Red("Invalid choice")
+		}
 	}
 }
 
