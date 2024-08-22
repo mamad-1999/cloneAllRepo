@@ -52,7 +52,6 @@ It provides an interactive and colorful terminal interface to choose and clone r
 1. **Create a .env file in the project directory with your GitHub token**:
    ```bash
    GITHUB_TOKEN=your_github_token
-  ``
 
 2. **Run the Script**:
   ```bash
