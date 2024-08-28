@@ -18,24 +18,26 @@ import (
 	"golang.org/x/term"
 )
 
+// init function to load environment variables
 func init() {
-	// Load the .env file
-	err := godotenv.Load()
-	if err != nil {
+	if err := godotenv.Load(); err != nil {
 		log.Fatalf("Error loading .env file")
 	}
 }
 
-func banner() {
+// displayBanner prints the banner on the console
+func displayBanner() {
 	fmt.Println()
-	color.Yellow("   █████████  ████                                 █████████   ████  ████ ")
-	color.Yellow("  ███░░░░░███░░███                                ███░░░░░███ ░░███ ░░███ ")
-	color.Yellow(" ███     ░░░  ░███   ██████  ████████    ██████  ░███    ░███  ░███  ░███ ")
-	color.Yellow("░███          ░███  ███░░███░░███░░███  ███░░███ ░███████████  ░███  ░███ ")
-	color.Yellow("░███          ░███ ░███ ░███ ░███ ░███ ░███████  ░███░░░░░███  ░███  ░███ ")
-	color.Yellow("░░███     ███ ░███ ░███ ░███ ░███ ░███ ░███░░░   ░███    ░███  ░███  ░███ ")
-	color.Yellow(" ░░█████████  █████░░██████  ████ █████░░██████  █████   █████ █████ █████")
-	color.Yellow("  ░░░░░░░░░  ░░░░░  ░░░░░░  ░░░░ ░░░░░  ░░░░░░  ░░░░░   ░░░░░ ░░░░░ ░░░░░ ")
+	color.Yellow(`
+	   █████████  ████                                 █████████   ████  ████ 
+	  ███░░░░░███░░███                                ███░░░░░███ ░░███ ░░███ 
+	 ███     ░░░  ░███   ██████  ████████    ██████  ░███    ░███  ░███  ░███ 
+	░███          ░███  ███░░███░░███░░███  ███░░███ ░███████████  ░███  ░███ 
+	░███          ░███ ░███ ░███ ░███ ░███ ░███████  ░███░░░░░███  ░███  ░███ 
+	░░███     ███ ░███ ░███ ░███ ░███ ░███ ░███░░░   ░███    ░███  ░███  ░███ 
+	 ░░█████████  █████░░██████  ████ █████░░██████  █████   █████ █████ █████
+	  ░░░░░░░░░  ░░░░░  ░░░░░░  ░░░░ ░░░░░  ░░░░░░  ░░░░░   ░░░░░ ░░░░░ ░░░░░ 
+	`)
 	fmt.Println()
 }
 
@@ -45,87 +47,116 @@ func main() {
 		log.Fatalf("GitHub token not found in .env file")
 	}
 
-	banner()
+	displayBanner()
 
-	// Set up OAuth2 authentication
 	ctx := context.Background()
-	ts := oauth2.StaticTokenSource(
-		&oauth2.Token{AccessToken: token},
-	)
-	tc := oauth2.NewClient(ctx, ts)
-
-	// Create a GitHub client
-	client := github.NewClient(tc)
+	client := createGitHubClient(ctx, token)
 
 	for {
-		// Get the GitHub username from the user
-		reader := bufio.NewReader(os.Stdin)
-		color.Yellow("Enter GitHub username (or type 'exit' to quit): ")
-		username, _ := reader.ReadString('\n')
-		username = strings.TrimSpace(username) // remove newline character and any surrounding spaces
-
-		if strings.ToLower(username) == "exit" {
-			color.Yellow("Exiting the program.")
+		username := promptUsername()
+		if username == "" {
 			break
 		}
 
-		// Initialize an empty slice to store all repositories
-		var allRepos []*github.Repository
-
-		// Fetch all repositories for the user with pagination
-		opts := &github.RepositoryListOptions{ListOptions: github.ListOptions{PerPage: 50}} // Adjust PerPage if needed
-		for {
-			repos, resp, err := client.Repositories.List(ctx, username, opts)
-			if err != nil {
-				log.Fatalf("Error fetching repositories: %v", err)
-			}
-
-			// Append the current page of repos to allRepos
-			allRepos = append(allRepos, repos...)
-
-			// Check if there are more pages to fetch
-			if resp.NextPage == 0 {
-				break
-			}
-			opts.Page = resp.NextPage
-		}
-
-		// List repositories and ask for user selection
-		color.Yellow("Select repository to clone:")
-		color.Red("0. Exit") // Option to exit
-		color.Green("1. All")
-
-		printRepoList(allRepos)
-
-		color.Yellow("Enter your choice (number): ")
-		choice, _ := reader.ReadString('\n')
-		choice = strings.TrimSpace(choice)
-		choiceNum, _ := strconv.Atoi(choice)
-
-		if choiceNum == 0 {
-			color.Yellow("Exiting to username input.")
+		repos := fetchRepositories(ctx, client, username)
+		if len(repos) == 0 {
+			color.Red("No repositories found for user %s", username)
 			continue
 		}
 
-		// Create a directory with the GitHub username
-		os.Mkdir(fmt.Sprintf("%s's Repo", username), 0755)
-
-		// Clone the repositories based on user choice
-		if choiceNum == 1 {
-			// Clone all repositories
-			for _, repo := range allRepos {
-				cloneRepo(username, *repo.CloneURL)
-			}
-		} else if choiceNum >= 2 && choiceNum < len(allRepos)+2 {
-			// Clone the selected repository
-			cloneRepo(username, *allRepos[choiceNum-2].CloneURL)
-		} else {
-			color.Red("Invalid choice")
+		choice := promptRepositorySelection(repos)
+		if choice == 0 {
+			continue
 		}
+
+		cloneSelectedRepositories(username, repos, choice)
 	}
 }
 
-// Function to print the repository list in multiple columns
+// createGitHubClient initializes and returns a GitHub client using OAuth2
+func createGitHubClient(ctx context.Context, token string) *github.Client {
+	ts := oauth2.StaticTokenSource(&oauth2.Token{AccessToken: token})
+	tc := oauth2.NewClient(ctx, ts)
+	return github.NewClient(tc)
+}
+
+// promptUsername asks the user for a GitHub username and returns it
+func promptUsername() string {
+	reader := bufio.NewReader(os.Stdin)
+	color.Yellow("Enter GitHub username (or type 'exit' to quit): ")
+	username, _ := reader.ReadString('\n')
+	username = strings.TrimSpace(username)
+
+	if strings.ToLower(username) == "exit" {
+		color.Yellow("Exiting the program.")
+		return ""
+	}
+
+	return username
+}
+
+// fetchRepositories retrieves all repositories for the given GitHub username
+func fetchRepositories(ctx context.Context, client *github.Client, username string) []*github.Repository {
+	var allRepos []*github.Repository
+	opts := &github.RepositoryListOptions{ListOptions: github.ListOptions{PerPage: 50}}
+
+	for {
+		repos, resp, err := client.Repositories.List(ctx, username, opts)
+		if err != nil {
+			log.Fatalf("Error fetching repositories: %v", err)
+		}
+
+		allRepos = append(allRepos, repos...)
+
+		if resp.NextPage == 0 {
+			break
+		}
+		opts.Page = resp.NextPage
+	}
+
+	return allRepos
+}
+
+// promptRepositorySelection presents the repository list and captures the user's choice
+func promptRepositorySelection(repos []*github.Repository) int {
+	color.Yellow("Select repository to clone:")
+	color.Red("0. Exit")
+	color.Green("1. All")
+
+	printRepoList(repos)
+
+	reader := bufio.NewReader(os.Stdin)
+	color.Yellow("Enter your choice (number): ")
+	choice, _ := reader.ReadString('\n')
+	choice = strings.TrimSpace(choice)
+	choiceNum, _ := strconv.Atoi(choice)
+
+	if choiceNum < 0 || choiceNum > len(repos)+1 {
+		color.Red("Invalid choice")
+		return 0
+	}
+
+	return choiceNum
+}
+
+// cloneSelectedRepositories clones repositories based on the user's choice
+func cloneSelectedRepositories(username string, repos []*github.Repository, choice int) {
+	dirName := fmt.Sprintf("%s's Repo", username)
+	if err := os.Mkdir(dirName, 0755); err != nil && !os.IsExist(err) {
+		log.Fatalf("Error creating directory: %v", err)
+	}
+
+	switch choice {
+	case 1:
+		for _, repo := range repos {
+			cloneRepository(dirName, *repo.CloneURL)
+		}
+	default:
+		cloneRepository(dirName, *repos[choice-2].CloneURL)
+	}
+}
+
+// printRepoList prints the repository list in a column format
 func printRepoList(repos []*github.Repository) {
 	if !isatty.IsTerminal(os.Stdout.Fd()) {
 		for i, repo := range repos {
@@ -134,23 +165,20 @@ func printRepoList(repos []*github.Repository) {
 		return
 	}
 
-	// Get terminal width
 	width, _, err := term.GetSize(int(os.Stdout.Fd()))
 	if err != nil {
-		width = 80 // Default to 80 if terminal size cannot be determined
+		width = 80
 	}
 
-	// Determine column width (longest repo name plus padding)
 	maxLength := 0
 	for _, repo := range repos {
 		if len(*repo.Name) > maxLength {
 			maxLength = len(*repo.Name)
 		}
 	}
-	columnWidth := maxLength + 5 // Adjust the padding as needed
+	columnWidth := maxLength + 5
 	columns := width / columnWidth
 
-	// Print the repo names in columns with color
 	for i, repo := range repos {
 		fmt.Printf("%s. %s",
 			color.GreenString("%d", i+2),
@@ -163,24 +191,31 @@ func printRepoList(repos []*github.Repository) {
 	fmt.Println()
 }
 
-func cloneRepo(username, cloneURL string) {
+// cloneRepository executes the git clone command for the given repository
+func cloneRepository(dirName, cloneURL string) {
 	color.Blue("Cloning %s...", cloneURL)
 
-	maxRetries := 5
-	for i := 0; i < maxRetries; i++ {
-		cmd := exec.Command("git", "-c", "http.postBuffer=524288000", "clone", cloneURL)
-		cmd.Dir = fmt.Sprintf("%s's Repo", username)
-		cmd.Stdout = os.Stdout
-		cmd.Stderr = os.Stderr
+	cmd := exec.Command("git", "-c", "http.postBuffer=524288000", "clone", cloneURL)
+	cmd.Dir = dirName
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
 
-		err := cmd.Run()
-		if err == nil {
-			color.Magenta("Clone completed.")
-			return
-		}
-
-		color.Red("Failed to clone repository (attempt %d/%d): %v", i+1, maxRetries, err)
+	if err := retryOnError(cmd.Run, 5); err != nil {
+		log.Fatalf("Failed to clone repository after 5 attempts: %v", err)
 	}
 
-	log.Fatalf("Failed to clone repository after %d attempts", maxRetries)
+	color.Magenta("Clone completed.")
+}
+
+// retryOnError retries the given function up to maxRetries times if it returns an error.
+// It returns the last error if all retries fail.
+func retryOnError(f func() error, maxRetries int) error {
+	var err error
+	for i := 0; i < maxRetries; i++ {
+		if err = f(); err == nil {
+			return nil
+		}
+		color.Red("Attempt %d/%d failed: %v", i+1, maxRetries, err)
+	}
+	return err
 }
