@@ -1,4 +1,4 @@
-module cloneAllRepo.go
+module github.com/mamad-1999/cloneAllRepo
 
 go 1.21.3
 
@@ -9,11 +9,11 @@ require (
 )
 
 require (
-	github.com/fatih/color v1.17.0 // indirect
+	github.com/fatih/color v1.17.0
 	github.com/google/go-querystring v1.1.0 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
-	github.com/mattn/go-isatty v0.0.20 // indirect
+	github.com/mattn/go-isatty v0.0.20
 	golang.org/x/crypto v0.0.0-20210817164053-32db794688a5 // indirect
 	golang.org/x/sys v0.23.0 // indirect
-	golang.org/x/term v0.23.0 // indirect
+	golang.org/x/term v0.23.0
 )
