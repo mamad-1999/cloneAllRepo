@@ -10,8 +10,6 @@ It provides an interactive and colorful terminal interface to choose and clone r
   <a href="#installation"><img src="https://img.shields.io/badge/Install-blue?style=for-the-badge" alt="Install"></a>
   <a href="#usage"><img src="https://img.shields.io/badge/Usage-green?style=for-the-badge" alt="Usage"></a>
   <a href="#preview"><img src="https://img.shields.io/badge/Preview-red?style=for-the-badge" alt="Preview"></a>
-  <a href="#output"><img src="https://img.shields.io/badge/Output-orange?style=for-the-badge" alt="Output"></a>
-  <a href="#troubleshooting"><img src="https://img.shields.io/badge/Troubleshooting-aqua?style=for-the-badge" alt="Troubleshooting"></a>
   <a href="#contributing"><img src="https://img.shields.io/badge/Contributing-yellow?style=for-the-badge" alt="Contributing"></a>
 </p>
 <p align="center">
