@@ -4,7 +4,7 @@
   <a href="https://github.com/mamad-1999/CloneAllRepo/stargazers"><img src="https://img.shields.io/github/stars/mamad-1999/CloneAllRepo"></a>
   <a href="https://github.com/mamad-1999/CloneAllRepo/blob/master/LICENSE"><img src="https://img.shields.io/github/license/mamad-1999/CloneAllRepo"></a>
 </p>
-<h4 align="center">CloneAllRepo is a script that allows you to clone repositories from a specified GitHub user.
+<h4 align="center">CloneAllRepo is a script that allows you to clone repositories from a specified GitHub user. <br>
 It provides an interactive and colorful terminal interface to choose and clone repositories.</h4>
 <p align="center">
   <a href="#installation"><img src="https://img.shields.io/badge/Install-blue?style=for-the-badge" alt="Install"></a>
