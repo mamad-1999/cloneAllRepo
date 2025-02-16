@@ -1,8 +1,8 @@
 <p align="center">
   <a href="https://golang.org/dl/"><img src="https://img.shields.io/badge/go-1.17%20%7C%201.18%20%7C%201.19%20%7C%201.20-blue"></a>
-  <a href="https://github.com/mamad-1999/CloneAllRepo/issues"><img src="https://img.shields.io/github/issues/mamad-1999/CloneAllRepo"></a>
-  <a href="https://github.com/mamad-1999/CloneAllRepo/stargazers"><img src="https://img.shields.io/github/stars/mamad-1999/CloneAllRepo"></a>
-  <a href="https://github.com/mamad-1999/CloneAllRepo/blob/master/LICENSE"><img src="https://img.shields.io/github/license/mamad-1999/CloneAllRepo"></a>
+  <a href="https://github.com/blackvoidx/CloneAllRepo/issues"><img src="https://img.shields.io/github/issues/blackvoidx/CloneAllRepo"></a>
+  <a href="https://github.com/blackvoidx/CloneAllRepo/stargazers"><img src="https://img.shields.io/github/stars/blackvoidx/CloneAllRepo"></a>
+  <a href="https://github.com/blackvoidx/CloneAllRepo/blob/master/LICENSE"><img src="https://img.shields.io/github/license/blackvoidx/CloneAllRepo"></a>
 </p>
 <h4 align="center">CloneAllRepo is a script that allows you to clone repositories from a specified GitHub user. <br>
 It provides an interactive and colorful terminal interface to choose and clone repositories.</h4>
@@ -32,7 +32,7 @@ It provides an interactive and colorful terminal interface to choose and clone r
 
 1. **Clone the Repository**:
    ```bash
-   git clone https://github.com/mamad-1999/CloneAllRepo.git
+   git clone https://github.com/blackvoidx/CloneAllRepo.git
    ```
 2. **Navigate to the Project Directory**:
     ```bash
