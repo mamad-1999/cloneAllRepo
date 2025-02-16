@@ -1,4 +1,4 @@
-module github.com/mamad-1999/cloneAllRepo
+module github.com/blackvoidx/cloneAllRepo
 
 go 1.21.3
 
